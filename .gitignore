@@ -1,0 +1,30 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+
+# Coverage & profiling
+coverage.out
+*.prof
+trace.out
+
+# Vendor (only if not using vendoring)
+vendor/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+tmp/
+__debug_bin
+*.log
