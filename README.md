@@ -138,7 +138,7 @@ A context-aware variant `ParseWithContext` is also provided for use cases where 
 
 ### aggregator.go
 
-**Responsibility:** Takes the flat `[]Record` slice from the parser and aggregates it into sorted cost summaries.
+**Responsibility:** Takes the flat `[]Record` slice from the parser and aggregates it into sorted cost summaries using a [goframe](https://github.com/LuizCFdosSantos/goframe) DataFrame.
 
 #### Key type
 
@@ -147,23 +147,27 @@ type ServiceCost struct {
     Service  string
     Cost     float64
     Currency string
-    Count    int  // number of line items
+    Count    int // number of line items
 }
 ```
 
-#### Functions
+#### How it works
+
+`recordsToDF` converts a `[]Record` into a goframe `DataFrame` with five columns: `service_key` (`ServiceName|BillingCurrency` composite), `account`, `cost`, `currency`, and `items` (always `1.0`, used for counting rows after aggregation).
+
+All three public functions delegate to this DataFrame before returning results:
 
 **`ByService(records []Record) []ServiceCost`**
 
-Groups records by a composite key of `(ServiceName, BillingCurrency)`. Using a compound key prevents incorrectly summing costs across different currencies if a multi-currency CUR is ever encountered. Results are sorted by `Cost` descending.
+Groups by the composite `service_key` column and sums `cost` and `items`. Using a compound key prevents incorrectly summing costs across different currencies. Results are sorted by `cost` descending via `DataFrame.SortBy`.
 
 **`ByAccount(records []Record) []ServiceCost`**
 
-Groups records by `AccountId`, reusing the `ServiceCost` type with the account ID in the `Service` field. Useful for understanding cost distribution across linked accounts in an AWS Organization.
+Groups by the `account` column, summing `cost`/`items` and keeping the first `currency` value per group. Reuses the `ServiceCost` type with the account ID in the `Service` field.
 
 **`TotalCost(records []Record) float64`**
 
-A simple fold over all records to produce the grand total, used for computing percentage columns in the renderer.
+Builds a goframe `Series` from all cost values and calls `.Sum()` to produce the grand total, used for computing percentage columns in the renderer.
 
 ---
 
@@ -228,3 +232,4 @@ Cobra automatically generates `--help` output from the `Use`, `Short`, and `Long
 | `github.com/spf13/cobra` | CLI framework — flags, subcommands, help generation |
 | `github.com/parquet-go/parquet-go` | Reading AWS CUR Parquet files |
 | `github.com/charmbracelet/lipgloss` | Terminal styling and table rendering |
+| `github.com/LuizCFdosSantos/goframe` | DataFrame-based grouping, aggregation, and sorting in the aggregator |

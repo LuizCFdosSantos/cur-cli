@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/LuizCFdosSantos/goframe v0.0.2 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
